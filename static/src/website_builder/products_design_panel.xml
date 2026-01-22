@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+<!-- Add Quote button option to the Products Design Panel (shop page editor) -->
+<!-- This adds a "Quote" toggle next to the "Add to Cart" button in the Actions section -->
+<t
+    t-name="ip_website_quote_cart.ProductsDesignPanel"
+    t-inherit="website_sale.ProductsDesignPanel"
+    t-inherit-mode="extension"
+>
+    <!-- Add Quote button inside the Buttons row, next to the Cart button -->
+    <BuilderButton id="'wsale_products_opt_add_to_cart'" position="after">
+        <BuilderButton
+            t-if="props.recordName === 'shop_opt_products_design_classes'"
+            title.translate="Quote"
+            icon="'fa-file-text'"
+            classAction="'o_wsale_products_opt_has_quote'"
+            id="'wsale_products_opt_add_to_quote'"
+        />
+    </BuilderButton>
+</t>
+
+</templates>

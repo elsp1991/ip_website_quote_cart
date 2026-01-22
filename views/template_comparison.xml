@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Comparison Tool: Replace Contact Us with Add to Quote for zero-price products -->
+    <!-- This file is only loaded if website_sale_comparison is installed -->
+    <template id="md_comparison_quote_button" inherit_id="website_sale_comparison.product_compare" name="Comparison Quote Button">
+        <xpath expr="//div[hasclass('mt-auto','pt-3')]/a[hasclass('btn_cta')]" position="attributes">
+            <attribute name="t-if">combination_info['prevent_zero_price_sale'] and not request.website.website_request_quote</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('mt-auto','pt-3')]/a[hasclass('btn_cta')]" position="after">
+            <button
+                t-if="combination_info['prevent_zero_price_sale'] and request.website.website_request_quote"
+                type="button"
+                class="o_wsale_product_btn_primary btn btn-primary js_add_to_quote_cart"
+                t-att-data-product-product-id="product.id"
+                t-att-data-product-template-id="product.product_tmpl_id.id"
+            >
+                <i class="fa fa-file-text me-2" aria-hidden="true"/><span class="o_label small">Add to Quote</span>
+            </button>
+        </xpath>
+    </template>
+</odoo>

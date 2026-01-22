@@ -1,0 +1,943 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Empty quote cart SVG icon with badge -->
+    <template id="empty_quote_cart_svg">
+        <svg width="100%" height="100" viewBox="0 0 100 92" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <style>
+                .docSwing {
+                    animation: docSwing 1.3s ease forwards;
+                    animation-delay: 0.75s;
+                    transform-origin: bottom center;
+                }
+                .heartBeat {
+                    animation: heartBeat 1.3s ease-in-out forwards;
+                    animation-delay: 0.75s;
+                    transform-origin: 80.5px 28.5px;
+                }
+                @keyframes docSwing {
+                    20% { transform: rotate(5deg); }
+                    40% { transform: rotate(-5deg); }
+                    60% { transform: rotate(3deg); }
+                    80% { transform: rotate(-2deg); }
+                    100% { transform: rotate(0deg); }
+                }
+                @keyframes heartBeat {
+                    0% { transform: scale(1); }
+                    14% { transform: scale(1.2); }
+                    28% { transform: scale(1); }
+                    42% { transform: scale(1.2); }
+                    70% { transform: scale(1); }
+                }
+            </style>
+            <!-- Document icon -->
+            <g class="docSwing">
+                <path d="M25 20C25 17.2386 27.2386 15 30 15H55L75 35V75C75 77.7614 72.7614 80 70 80H30C27.2386 80 25 77.7614 25 75V20Z" fill="currentColor"/>
+                <path d="M55 15L75 35H60C57.2386 35 55 32.7614 55 30V15Z" fill="var(--body-bg, #F5F5F5)"/>
+                <!-- Lines on document -->
+                <rect x="35" y="45" width="30" height="4" rx="2" fill="var(--body-bg, #F5F5F5)"/>
+                <rect x="35" y="55" width="25" height="4" rx="2" fill="var(--body-bg, #F5F5F5)"/>
+                <rect x="35" y="65" width="20" height="4" rx="2" fill="var(--body-bg, #F5F5F5)"/>
+            </g>
+            <!-- Badge circle with 0 -->
+            <circle class="heartBeat" cx="80.5" cy="28.5" r="11.5" fill="var(--o-color-1, #D9D9D9)" stroke="var(--body-bg, #F5F5F5)" stroke-width="3"/>
+            <text class="heartBeat" x="80.5" y="33" text-anchor="middle" font-size="14" font-weight="bold" fill="var(--o-color-3, #000)">0</text>
+        </svg>
+    </template>
+
+    <template id="hide_price_with_zero_product_price" inherit_id="website_sale.product_price">
+        <xpath expr="//div[@name='product_price']" position="attributes">
+            <attribute name="t-if">combination_info.get('price', 0) != 0</attribute>
+        </xpath>
+    </template>
+    
+    <!-- Header Quote Cart Link Template (reusable like wishlist) -->
+    <template id="header_quote_cart_link" name="Header Quote Cart Link">
+        <t t-set="quote_cart_quantity" t-value="request.session.get('quote_cart_quantity', 0)" />
+        <t t-set="show_quote" t-value="website.has_ecommerce_access()"/>
+        <li t-attf-class="o_wsale_my_quote #{not show_quote and 'd-none'} #{_item_class}">
+            <a href="/shop/quote/cart" t-attf-class="#{_link_class}" title="Quote Cart">
+                <div t-attf-class="#{_icon_wrap_class}">
+                    <i t-if="_icon" class="fa fa-file-text fa-stack"/>
+                    <sup t-attf-class="my_qoute_cart_quantity badge bg-primary #{_badge_class} #{'d-none' if quote_cart_quantity == 0 else ''}" t-out="quote_cart_quantity" t-att-data-order-id="request.session.get('quote_order_id', '')"/>
+                </div>
+                <span t-if="_text" t-attf-class="#{_text_class}">Quote</span>
+            </a>
+        </li>
+    </template>
+    
+    <!-- Template to hide quote cart link when empty (toggled via website editor) -->
+    <!-- active=False means quote icon is always visible by default (not hidden when empty) -->
+    <!-- The website editor toggle with ! prefix: ON = quote visible, OFF = quote hidden when empty -->
+    <template id="header_hide_empty_quote_link" inherit_id="ip_website_quote_cart.header_quote_cart_link" active="False">
+        <xpath expr="//t[@t-set='show_quote']" position="after">
+            <t t-set="show_quote" t-value="show_quote and quote_cart_quantity > 0"/>
+        </xpath>
+        <xpath expr="//li[contains(@t-attf-class, 'o_wsale_my_quote')]" position="attributes">
+            <attribute name="t-attf-class" add="o_wsale_my_quote_hide_empty" separator=" "/>
+        </xpath>
+    </template>
+    
+    <!-- Inject quote cart link after normal cart (before wishlist) for each header type -->
+    <template id="template_header_mobile_quote" inherit_id="website_sale.template_header_mobile">
+        <xpath expr="//t[@t-call='website_sale.header_cart_link']" position="after">
+            <t t-call="ip_website_quote_cart.header_quote_cart_link">
+                <t t-set="_icon" t-value="True"/>
+                <t t-set="_link_class" t-value="'o_navlink_background_hover btn position-relative rounded-circle border-0 p-1 text-reset'"/>
+                <t t-set="_badge_class" t-value="'position-absolute top-0 end-0 mt-n1 me-n1'"/>
+            </t>
+        </xpath>
+    </template>
+    
+    <template id="template_header_default_quote" inherit_id="website_sale.template_header_default">
+        <xpath expr="//t[@t-call='website_sale.header_cart_link']" position="after">
+            <t t-call="ip_website_quote_cart.header_quote_cart_link">
+                <t t-set="_icon" t-value="True"/>
+                <t t-set="_link_class" t-value="'o_navlink_background btn position-relative rounded-circle p-1 text-center text-reset'"/>
+                <t t-set="_badge_class" t-value="'position-absolute top-0 end-0 mt-n1 me-n1 rounded-pill'"/>
+            </t>
+        </xpath>
+    </template>
+    
+    <template id="template_header_hamburger_quote" inherit_id="website_sale.template_header_hamburger">
+        <xpath expr="//t[@t-call='website_sale.header_cart_link']" position="after">
+            <t t-call="ip_website_quote_cart.header_quote_cart_link">
+                <t t-set="_icon" t-value="True"/>
+                <t t-set="_link_class" t-value="'o_navlink_background btn position-relative rounded-pill p-1 text-reset'"/>
+                <t t-set="_badge_class" t-value="'position-absolute top-0 end-0 mt-n1 me-n1 rounded'"/>
+            </t>
+        </xpath>
+    </template>
+    
+    <template id="template_header_stretch_quote" inherit_id="website_sale.template_header_stretch">
+        <xpath expr="//t[@t-call='website_sale.header_cart_link']" position="after">
+            <t t-call="ip_website_quote_cart.header_quote_cart_link">
+                <t t-set="_icon" t-value="True"/>
+                <t t-set="_item_class" t-value="'border-start o_border_contrast'"/>
+                <t t-set="_link_class" t-value="'o_navlink_background_hover btn position-relative d-flex align-items-center h-100 rounded-0 p-2 text-reset'"/>
+                <t t-set="_badge_class" t-value="'rounded'"/>
+            </t>
+        </xpath>
+    </template>
+    
+    <template id="template_header_vertical_quote" inherit_id="website_sale.template_header_vertical">
+        <xpath expr="//t[@t-call='website_sale.header_cart_link']" position="after">
+            <t t-call="ip_website_quote_cart.header_quote_cart_link">
+                <t t-set="_icon" t-value="True"/>
+                <t t-set="_link_class" t-value="'o_navlink_background btn position-relative rounded-circle p-1 text-reset'"/>
+                <t t-set="_badge_class" t-value="'position-absolute top-0 end-0 mt-n1 me-n1 rounded-pill'"/>
+            </t>
+        </xpath>
+    </template>
+    
+    <template id="template_header_search_quote" inherit_id="website_sale.template_header_search">
+        <xpath expr="//t[@t-call='website_sale.header_cart_link']" position="after">
+            <t t-call="ip_website_quote_cart.header_quote_cart_link">
+                <t t-set="_text" t-value="True"/>
+                <t t-set="_item_class" t-value="'border-start o_border_contrast'"/>
+                <t t-set="_link_class" t-value="'o_navlink_background_hover btn btn-sm d-flex align-items-center gap-1 h-100 rounded-0 p-2 text-reset'"/>
+                <t t-set="_badge_class" t-value="'rounded'"/>
+            </t>
+        </xpath>
+    </template>
+    
+    <template id="template_header_sales_one_quote" inherit_id="website_sale.template_header_sales_one">
+        <xpath expr="//t[@t-call='website_sale.header_cart_link']" position="after">
+            <t t-call="ip_website_quote_cart.header_quote_cart_link">
+                <t t-set="_icon" t-value="True"/>
+                <t t-set="_link_class" t-value="'o_navlink_background_hover btn position-relative rounded-circle border-0 p-1 text-reset'"/>
+                <t t-set="_badge_class" t-value="'position-absolute top-0 end-0 mt-n1 me-n1 rounded-pill'"/>
+            </t>
+        </xpath>
+    </template>
+    
+    <template id="template_header_sales_two_quote" inherit_id="website_sale.template_header_sales_two">
+        <xpath expr="//t[@t-call='website_sale.header_cart_link']" position="after">
+            <t t-call="ip_website_quote_cart.header_quote_cart_link">
+                <t t-set="_icon" t-value="True"/>
+                <t t-set="_link_class" t-value="'o_navlink_background_hover btn position-relative rounded-circle p-1 text-reset'"/>
+                <t t-set="_badge_class" t-value="'position-absolute top-0 end-0 mt-n1 me-n1 rounded-pill'"/>
+            </t>
+        </xpath>
+    </template>
+    
+    <template id="template_header_sales_three_quote" inherit_id="website_sale.template_header_sales_three">
+        <xpath expr="//t[@t-call='website_sale.header_cart_link']" position="after">
+            <t t-call="ip_website_quote_cart.header_quote_cart_link">
+                <t t-set="_icon" t-value="True"/>
+                <t t-set="_link_class" t-value="'o_navlink_background btn position-relative rounded-circle p-1 text-reset'"/>
+                <t t-set="_badge_class" t-value="'position-absolute top-0 end-0 mt-n1 me-n1 rounded-pill'"/>
+            </t>
+        </xpath>
+    </template>
+    
+    <template id="template_header_boxed_quote" inherit_id="website_sale.template_header_boxed">
+        <xpath expr="//t[@t-call='website_sale.header_cart_link']" position="after">
+            <t t-call="ip_website_quote_cart.header_quote_cart_link">
+                <t t-set="_icon" t-value="True"/>
+                <t t-set="_link_class" t-value="'o_navlink_background btn position-relative rounded-circle p-1 text-reset'"/>
+                <t t-set="_badge_class" t-value="'position-absolute top-0 end-0 mt-n1 me-n1 rounded-pill'"/>
+            </t>
+        </xpath>
+    </template>
+    
+    <!-- Add to Quote button on product tiles (shop page grid) -->
+    <template
+        id="add_to_quote_product_tile"
+        inherit_id="website_sale.shop_product_buttons"
+        name="Add to Quote Button on Product Tile"
+        priority="31"
+    >
+        <xpath expr="//div[hasclass('o_wsale_product_action_row')]" position="inside">
+            <!-- Uses the website editor toggle via product_tile_element_visibility -->
+            <t t-call="website_sale.product_tile_element_visibility">
+                <t t-set="visible_element_class" t-value="'o_wsale_products_opt_has_quote'"/>
+                <button
+                    type="button"
+                    class="btn o_add_quote js_add_quote_grid"
+                    title="Add to Quote"
+                    aria-label="Add to Quote"
+                    t-att-data-product-template-id="product.id"
+                    t-att-data-product-product-id="variant.id"
+                >
+                    <span class="fa fa-file-text fa-fw o_not-animable"/>
+                    <span class="o_label small ms-2">Quote</span>
+                </button>
+            </t>
+        </xpath>
+    </template>
+    
+     <template id="add_quote" inherit_id="website_sale.cta_wrapper" name="Product" track="1">
+        <xpath expr="//div[@id='o_wsale_cta_wrapper']" position="inside">
+            <input type="hidden" class="product_id" name="product_id" t-att-value="product_variant.id" />
+            <a role="button" t-if="request.website.website_request_quote" id="add_to_quote_cart" class="btn btn-primary js_check_product js_add_quote_json a-submit" href="#" data-animation-selector=".o_wsale_product_images">
+                <i class="fa fa-file-text me-2" /> Add to quote
+            </a>
+        </xpath>
+        <xpath expr="//a[@t-attf-class='btn btn-primary js_check_product a-submit flex-grow-1']" position="replace">
+            <a t-if="combination_info.get('price', 0) != 0" data-animation-selector=".o_wsale_product_images" role="button" id="add_to_cart" t-attf-class="btn btn-primary js_check_product a-submit flex-grow-1" href="#">
+                <i class="fa fa-shopping-cart me-2" />
+                Add to cart
+            </a>
+        </xpath>
+    </template>
+    <template id="cart_lines" name="Shopping Quote Cart Lines">
+        <div
+            t-if="not website_sale_order or not website_sale_order.website_order_line"
+            class="js_cart_lines w-100 text-center"
+        >
+            <div class="mt-5 mb-3"><t t-call="ip_website_quote_cart.empty_quote_cart_svg"/></div>
+            <h5 class="mb-3">
+                Your quotation is empty!
+            </h5>
+            <p>
+                <a href="/shop" class="btn btn-primary">
+                    Add products to quote <i class="fa fa-file-text ms-1"/>
+                </a>
+            </p>
+        </div>
+        <t t-if='website_sale_order'>
+            <div t-if='website_sale_order._get_shop_warning(clear=False)' class="alert alert-warning js_cart_lines" role="alert">
+                <strong>Warning!</strong>
+                <t t-esc='website_sale_order._get_shop_warning()' />
+            </div>
+        </t>
+        <div id="cart_products" t-if="website_sale_order and website_sale_order.website_order_line" class="js_cart_lines d-flex flex-column mb32 quote_cart_lines">
+            <t t-set="show_qty" t-value="is_view_active('website_sale.product_quantity')" />
+            <div t-foreach="website_sale_order.website_order_line" t-as="line" t-attf-class="o_cart_product d-flex align-items-stretch gap-3 #{line.linked_line_id and 'optional_product info'} #{not line_last and 'border-bottom pb-4'} #{line_index &gt; 0 and 'pt-4'}" t-attf-data-product-id="#{line.product_id and line.product_id.id}">
+                <t t-if="line.product_id">
+                    <img t-if="not line._is_sellable() and line.product_id.image_128" t-att-src="image_data_uri(line.product_id.image_128)" class="o_image_64_max  img rounded" t-att-alt="line.name_short" />
+                    <div t-else="" t-field="line.product_id.image_128" t-options="{'widget': 'image', 'qweb_img_responsive': False, 'class': 'o_image_64_max rounded'}" />
+                    <div class="flex-grow-1">
+                        <t t-call="website_sale.cart_line_product_link">
+                            <h6 t-field="line.name_short" class="d-inline align-top h6 fw-bold" />
+                        </t>
+                        <t t-call="website_sale.cart_line_description_following_lines">
+                            <t t-set="div_class" t-valuef="d-none d-md-block" />
+                        </t>
+                        <div>
+                            <a href='#' class="js_delete_product d-none d-md-inline-block small" aria-label="Remove from cart" title="Remove from cart">Remove</a>
+                            <button class="js_delete_product btn btn-light d-inline-block d-md-none" title="remove">
+                                <i class="fa fa-trash-o" />
+                            </button>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-column align-items-end">
+                        <t t-set="should_show_quantity_selector" t-value="is_view_active('website_sale.product_quantity')"/>
+                        <div t-attf-class="css_quantity input-group justify-content-end {{should_show_quantity_selector and line._is_sellable() and 'border' or ''}}" t-attf-name="{{'website_sale_cart_line_quantity' if not is_mobile else 'website_sale_cart_line_quantity_mobile'}}">
+                            <t t-if="should_show_quantity_selector and line._is_sellable()">
+                                <a
+                                    href="#"
+                                    class="btn btn-link d-inline-block border-end-0"
+                                    aria-label="Remove one"
+                                    title="Remove one"
+                                >
+                                    <i class="oi oi-minus position-relative z-1"/>
+                                </a>
+                                <input
+                                    type="text"
+                                    class="js_quantity quantity form-control border-0"
+                                    t-att-data-line-id="line.id"
+                                    t-att-data-product-id="line.product_id.id"
+                                    t-att-value="line._get_displayed_quantity()"
+                                    t-att-data-cart_type="'quote'"
+                                />
+                                <t t-if="line._get_shop_warning(clear=False)">
+                                    <a href="#" class="btn btn-link">
+                                        <i
+                                            class="fa fa-warning text-warning"
+                                            t-att-title="line._get_shop_warning()"
+                                            role="img"
+                                            aria-label="Warning"
+                                        />
+                                    </a>
+                                </t>
+                                <a
+                                    t-else=""
+                                    href="#"
+                                    class="btn btn-link d-inline-block border-start-0"
+                                    aria-label="Add one"
+                                    title="Add one"
+                                >
+                                    <i class="oi oi-plus position-relative z-1"/>
+                                </a>
+                            </t>
+                            <t t-else="">
+                                <input
+                                    type="text"
+                                    class="js_quantity form-control quantity text-start text-md-end text-md-end border-0 p-0 shadow-none mw-100"
+                                    t-att-data-line-id="line.id"
+                                    t-att-data-product-id="line.product_id.id"
+                                    t-att-value="line._get_displayed_quantity()"
+                                    readonly="True"
+                                />
+                            </t>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </template>
+    <template id="short_cart_summary" name="Short Cart right column">
+        <div class="card js_cart_summary" t-if="website_sale_order and website_sale_order.website_order_line">
+            <div class="card-body">
+                <h4 class="d-none d-xl-block">Order Total</h4>
+                <hr class="d-none d-xl-block" />
+                <div>
+                    <t t-call="website_sale.total">
+                        <t t-set="hide_coupon">True</t>
+                        <t t-set="no_rowspan" t-value="1" />
+                    </t>
+                </div>
+            </div>
+        </div>
+    </template>
+    <template id="quote_cart" name="Quote Cart">
+        <t t-call="website.layout">
+            <t t-set="body_classname" t-value="'o_website_sale_checkout'"/>
+            <div id="wrap" class="d-flex flex-column flex-grow-1">
+                <div class="oe_website_sale o_website_sale_checkout_container container d-flex flex-column flex-grow-1 py-lg-2">
+                    <div class="oe_structure" id="oe_structure_website_sale_cart_2"/>
+                    
+                    <div class="row mb32">
+                        <!-- Wizard steps at top -->
+                        <div class="col-12">
+                            <t t-call="ip_website_quote_cart.quote_wizard_checkout">
+                                <t t-set="current_step" t-value="'order'"/>
+                            </t>
+                        </div>
+                        
+                        <!-- LEFT COLUMN: Cart content (matching website_sale.cart structure) -->
+                        <div id="shop_cart" t-attf-class="oe_cart col-12 #{'col-lg-7' if website_sale_order and website_sale_order.website_order_line else ''}">
+                            <div class="d-flex align-items-center mb-3">
+                                <h4 class="mb-0">Quotation summary</h4>
+                            </div>
+                            <div t-if="abandoned_proceed or access_token" class="alert alert-info mt8 mb8" role="alert">
+                                <t t-if="abandoned_proceed">
+                                    <p>Your previous cart has already been completed.</p>
+                                    <p t-if="website_sale_order">Please proceed your current cart.</p>
+                                </t>
+                                <t t-if="access_token">
+                                    <p>This is your current cart.</p>
+                                    <p>
+                                        <strong><a t-attf-href="/shop/quote/cart/?access_token=#{access_token}&amp;revive=squash">Click here</a></strong> if you want to restore your previous cart. Your current cart will be replaced with your previous cart.
+                                    </p>
+                                    <p>
+                                        <strong><a t-attf-href="/shop/quote/cart/?access_token=#{access_token}&amp;revive=merge">Click here</a></strong> if you want to merge your previous cart into current cart.
+                                    </p>
+                                </t>
+                            </div>
+                            <t t-call="ip_website_quote_cart.cart_lines"/>
+                            <div class="clearfix"/>
+                            <div class="oe_structure" id="oe_structure_website_sale_cart_1"/>
+                        </div>
+                        
+                        <!-- RIGHT COLUMN: Sidebar with items summary and buttons (only when cart has items) -->
+                        <div t-if="website_sale_order and website_sale_order.website_order_line" class="d-none d-lg-block offset-xxl-1 col-lg-5 col-xxl-4">
+                            <div class="o_total_card card sticky-lg-top o_wsale_sticky_object mb-3 mb-lg-0">
+                                <div class="card-body p-lg-4 pt-lg-3">
+                                    <t t-call="ip_website_quote_cart.quote_cart_summary_content"/>
+                                    <div class="o_cta_navigation_container px-0 mt-3">
+                                        <div class="d-grid gap-2">
+                                            <a role="button" class="btn btn-primary w-100" href="/shop/quote/checkout">
+                                                <span>Process Quote</span>
+                                                <i class="fa fa-angle-right ms-2 fw-light"/>
+                                            </a>
+                                            <!-- Separator -->
+                                            <div class="position-relative d-flex w-100 justify-content-center align-items-center my-2 opacity-75">
+                                                <hr class="w-100 m-0"/>
+                                                <span class="px-3 bg-white small text-muted">or</span>
+                                                <hr class="w-100 m-0"/>
+                                            </div>
+                                            <a href="/shop" class="text-center">
+                                                <i class="fa fa-angle-left me-2 fw-light"/>
+                                                <span>Continue Shopping</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Mobile sticky summary (matching website_sale checkout_layout) -->
+                    <div class="o_mobile_summary d-lg-none sticky-bottom mt-auto bg-body" t-if="website_sale_order and website_sale_order.website_order_line">
+                        <div class="d-flex justify-content-between align-items-center py-3">
+                            <div>
+                                <span class="text-muted small">Items in Quote</span>
+                                <div class="fw-bold"><t t-out="len(website_sale_order.website_order_line)"/> product(s)</div>
+                            </div>
+                            <a role="button" class="btn btn-primary" href="/shop/quote/checkout">
+                                <span>Process Quote</span>
+                                <i class="fa fa-angle-right ms-2"/>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+    <template id="checkout" inherit_id="website_sale.checkout_layout">
+        <!-- Replace sidebar with conditional display for quote vs normal checkout -->
+        <xpath expr="//div[@t-else='' and hasclass('d-none','d-lg-block')]" position="replace">
+            <!-- Normal cart sidebar - show when NOT in quote checkout (keep original t-else behavior) -->
+            <div t-if="not show_shorter_cart_summary and not quote_checkout" class="d-none d-lg-block offset-xxl-1 col-12 col-lg-5 col-xxl-4 rounded">
+                <div class="o_total_card card sticky-lg-top o_wsale_sticky_object mb-3 mb-lg-0">
+                    <div class="card-body p-lg-4 pt-lg-3">
+                        <div class="d-none d-lg-block">
+                            <t t-call="website_sale.cart_summary_content"/>
+                            <t t-call="website_sale.total">
+                                <t t-set="_cart_total_classes" t-valuef="border-top pt-2"/>
+                            </t>
+                        </div>
+                        <div t-if="show_navigation_button" class="o_cta_navigation_container px-0">
+                            <t t-call="website_sale.navigation_buttons"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Quote checkout sidebar (no prices, no total) -->
+            <div t-if="not show_shorter_cart_summary and quote_checkout" class="d-none d-lg-block offset-xxl-1 col-12 col-lg-5 col-xxl-4 rounded">
+                <div class="o_total_card card sticky-lg-top o_wsale_sticky_object mb-3 mb-lg-0">
+                    <div class="card-body p-lg-4 pt-lg-3">
+                        <div class="d-none d-lg-block">
+                            <t t-call="ip_website_quote_cart.quote_cart_summary_content"/>
+                        </div>
+                        <div class="o_cta_navigation_container px-0 mt-3">
+                            <t t-call="ip_website_quote_cart.quote_navigation_buttons"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+        <!-- Hide normal wizard and add quote wizard for quote checkout -->
+        <xpath expr="//t[@t-call='website_sale.wizard_checkout']" position="attributes">
+            <attribute name="t-if">not quote_checkout</attribute>
+        </xpath>
+        <xpath expr="//t[@t-call='website_sale.wizard_checkout']" position="after">
+            <t t-if="quote_checkout" t-call="ip_website_quote_cart.quote_wizard_checkout">
+                <t t-set="current_step" t-value="'address'"/>
+            </t>
+        </xpath>
+        <!-- Hide mobile order summary for quote checkout and add quote-specific one -->
+        <xpath expr="//div[hasclass('o_mobile_summary')]" position="attributes">
+            <attribute name="t-if">not quote_checkout</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('o_mobile_summary')]" position="after">
+            <!-- Quote checkout mobile summary -->
+            <div t-if="quote_checkout and website_sale_order and website_sale_order.website_order_line" class="o_mobile_summary d-lg-none sticky-bottom mt-auto bg-body">
+                <div class="d-flex justify-content-between align-items-center py-3">
+                    <div>
+                        <span class="text-muted small">Items in Quote</span>
+                        <div class="fw-bold"><t t-out="len(website_sale_order.website_order_line)"/> product(s)</div>
+                    </div>
+                    <a role="button" class="btn btn-primary" href="/shop/quote/extra_info">
+                        <span>Continue</span>
+                        <i class="fa fa-angle-right ms-2"/>
+                    </a>
+                </div>
+            </div>
+        </xpath>
+    </template>
+    <template id="address" inherit_id="website_sale.address" name="Address Management">
+        <!-- Change form action and data-submit-url for quote checkout -->
+        <xpath expr="//form[@name='address_form']" position="attributes">
+            <!-- Override the action with dynamic value - the t-att- takes precedence when both exist -->
+            <attribute name="action"></attribute>
+            <attribute name="t-att-action">'/shop/quote/address' if is_quote_order else '/shop/address/submit'</attribute>
+            <attribute name="t-att-data-submit-url">'/shop/quote/address' if is_quote_order else '/shop/address/submit'</attribute>
+        </xpath>
+        <!-- Change sign in redirect URL for quote checkout -->
+        <xpath expr="//div[hasclass('o_address_signin')]//a[@href='/web/login?redirect=/shop/checkout']" position="replace">
+            <a
+                role="button"
+                t-att-href="'/web/login?redirect=/shop/quote/checkout' if is_quote_order else '/web/login?redirect=/shop/checkout'"
+                class="btn btn-primary ms-2"
+            >
+                Sign in
+            </a>
+        </xpath>
+    </template>
+    <template id="address_fields" inherit_id="portal.address_form_fields" name="Address Management">
+        <xpath expr="//input[@name='callback']" position="replace">
+            <input type="hidden" name="callback" value="/shop/checkout?use_billing" t-if="not is_quote_order" />
+            <input type="hidden" name="callback" value="/shop/quote/checkout?use_billing" t-if="is_quote_order" />
+        </xpath>
+        <xpath expr="//t[@t-if='callback']" position="after">
+            <t t-if="is_quote_order">
+                <input type="hidden" name="quote_cart" value="1"/>
+            </t>
+        </xpath>
+    </template>
+    <template id="address_kanban" inherit_id="portal.address_card" name="Kanban address">
+        <xpath expr="//a[hasclass('js_edit_address')]" position="attributes">
+            <attribute name="t-att-data-cart_type">quote_checkout</attribute>
+        </xpath>
+        <!-- <xpath expr="//div" position="attributes">
+            <attribute name="t-att-action">'/shop/checkout' if not quote_checkout else '/shop/quote/checkout'</attribute>
+        </xpath> -->
+    </template>
+    <template id="add_address" inherit_id="portal.my_addresses" name="Add address">
+        <xpath expr="//t[@t-set='new_address_url']" position="replace">
+            <t t-if="quote_checkout" t-set="new_address_href" t-value="'/shop/quote/address?address_type=' + address_type"/>
+            <t t-else="" t-set="new_address_href" t-value="'/shop/address?address_type=' + address_type"/>
+        </xpath>
+    </template>
+    <template id="qt_thanks_page" name="Quote Thank You">
+        <t name="Thanks (Quatation)" t-name="md_website_quotation_request.quatation_thanks">
+            <t t-call="website.layout">
+                <div id="wrap" class="oe_structure oe_empty">
+                    <section class="s_text_block o_colored_level d-flex align-items-center" data-snippet="s_text_block" style="min-height: 50vh;">
+                        <div class="container s_allow_columns">
+                            <div class="row justify-content-center">
+                                <div class="col-lg-8 col-xl-7">
+                                    <span class="d-block fa fa-4x fa-thumbs-up mx-auto rounded-circle bg-primary text-light" /><br />
+                                    <h1 class="text-center">Thank You!</h1>
+                                    <div class="pb16 pt16 s_hr" data-snippet="s_hr" data-name="Separator">
+                                        <hr class="mx-auto w-50 text-center" />
+                                    </div>
+                                    <h5 class="text-center">
+                                        <span>Your Quotation has been submitted <b>successfully</b></span>
+                                    </h5>
+                                    <p class="text-center" style="margin-bottom: 5px;">Your Quotation reference: <b>
+                                            <t t-esc="order_reference" /></b></p>
+                                    <p class="text-center">We will get back to you within 24 hours.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <input t-if='website.plausible_shared_key' type='hidden' class='js_plausible_push' data-event-name='Lead Generation' data-event-params='{"CTA": "Contact Us"}' />
+            </t>
+        </t>
+    </template>
+    <template id="portal_my_home_req_quotations" name="Show Requested Quotations" customize_show="True" inherit_id="portal.portal_my_home" priority="20">
+        <xpath expr="//div[@id='portal_common_category']" position="before">
+            <div class="o_portal_category row g-2 mt-3">
+                <t t-call="portal.portal_docs_entry">
+                    <t t-set="icon" t-value="'/web/static/img/rfq.svg'"/>
+                    <t t-set="title">Online Requests for Quotation</t>
+                    <t t-set="url" t-value="'/my/requested_quotes'" />
+                    <t t-set="placeholder_count" t-value="'requested_quotation_count'" />
+                </t>
+            </div>
+        </xpath>
+    </template>
+    <template id="portal_my_requested_quotations" name="My Quotations">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True" />
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Quotations</t>
+            </t>
+            <t t-if="not quotations">
+                <p>There are currently no quotations for your account.</p>
+            </t>
+            <t t-if="quotations" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Quotation #</th>
+                        <th class="text-right">Quotation Date</th>
+                        <th class="text-right">Valid Until</th>
+                        <th class="text-center" />
+                        <th class="text-right">Total</th>
+                    </tr>
+                </thead>
+                <t t-foreach="quotations" t-as="quotation">
+                    <tr t-if="quotation.state != 'sent' and quotation.state != 'cancel'">
+                        <td><a t-att-href="quotation.get_portal_url()">
+                                <t t-esc="quotation.name" /></a></td>
+                        <td class="text-right"><span t-field="quotation.date_order" /></td>
+                        <td class="text-right"><span t-field="quotation.validity_date" /></td>
+                        <td class="text-center">
+                            <span t-if="quotation.state == 'cancel'" class="badge badge-pill badge-secondary"><i class="fa fa-fw fa-remove" /> Cancelled</span>
+                            <span t-if="quotation.is_expired" class="badge badge-pill badge-secondary"><i class="fa fa-fw fa-clock-o" /> Expired</span>
+                        </td>
+                        <td class="text-right">
+                            <span t-field="quotation.amount_total" />
+                        </td>
+                    </tr>
+                </t>
+            </t>
+        </t>
+    </template>
+    <template id="portal_my_home_menu_sale_md" inherit_id="sale.portal_my_home_menu_sale">
+        <xpath expr="//li[@t-if='sale_order']" position="before">
+            <li t-if="page_name == 'requested_quote' or sale_order and sale_order.state == 'draft'" t-attf-class="breadcrumb-item #{'active ' if not sale_order else ''}">
+                <a t-if="sale_order" t-attf-href="/my/requested_quotes?{{ keep_query() }}">Requested Quotations</a>
+                <t t-else="">Requested Quotations</t>
+            </li>
+        </xpath>
+    </template>
+
+    <template id="md_checkout" inherit_id="website_sale.checkout">
+        <xpath expr="//t[@t-call='website_sale.delivery_form']" position="before">
+            <!-- <t t-call="website_sale.delivery_address_row">
+                <t t-set="order" t-value="order" />
+                <t t-set="is_invoice" t-value="True" />
+                <t t-set="addresses" t-value="billings" />
+                <t t-set="selected_address" t-value="order.partner_invoice_id" />
+                <t t-set="quote_checkout" t-value="quote_checkout" />
+            </t> -->
+        </xpath>
+        <!-- <xpath expr="//t[@t-call='website_sale.delivery_form']" position="replace">
+            
+            <t t-call="website_sale.delivery_form" groups="account.group_delivery_invoice_address">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h4>Shipping</h4>
+                    </div>
+                </div>
+                <t t-call="website_sale.address_row">
+                    <t t-set="order" t-value="order" />
+                    <t t-set="is_invoice" t-value="False" />
+                    <t t-set="addresses" t-value="shippings" />
+                    <t t-set="selected_address" t-value="order.partner_shipping_id" />
+                    <t t-set="quote_checkout" t-value="quote_checkout" />
+                </t>
+            </t>
+        </xpath> -->
+        
+        <xpath expr="//t[@t-call='website_sale.delivery_form']" position="attributes">
+            <attribute name="t-if">not quote_checkout</attribute>
+        </xpath>
+        <!-- Add empty placeholder for o_delivery_form when in quote checkout to prevent JS crash -->
+        <xpath expr="//t[@t-call='website_sale.delivery_form']" position="after">
+            <div t-if="quote_checkout" id="o_delivery_form" class="d-none"/>
+        </xpath>
+    </template>
+    <template id="md_remove_sale_record_sidebar" inherit_id="sale.sale_order_portal_template" name="Sales Order">
+        <xpath expr="//a[@id='print_invoice_report']" position="replace">
+            <a class="btn btn-secondary o_print_btn o_portal_invoice_print d-block" t-att-href="sale_order.get_portal_url(report_type='pdf')" id="print_invoice_report" title="View Details" target="_blank"><i class="fa fa-print" /> View/Print PDF</a>
+        </xpath>
+        <xpath expr="//a[hasclass('btn','btn-danger')]" position="replace">
+            <a role="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modaldecline" href="#"> <i class="fa fa-times" /> Reject</a>
+        </xpath>
+        <xpath expr="//div[hasclass('o_download_pdf','d-flex','gap-2','flex-lg-column','flex-xl-row','flex-wrap')]" position="after">
+            <div class="flex-grow-1" t-if="sale_order._has_to_be_signed()">
+                <a role="button" class="btn btn-danger d-block" data-bs-toggle="modal" data-bs-target="#modaldecline" href="#"> <i class="fa fa-times" /> Reject</a>
+            </div>
+        </xpath>
+        <xpath expr="//div[hasclass('d-flex','flex-column','gap-4','mt-3')]" position="after">
+            <t t-set="quote_state" t-value="sale_order.state" />
+        </xpath>
+        <xpath expr="//t[contains(@t-if, 'sale_order._has_to_be_signed()')]" position="attributes">
+            <attribute name="t-if">sale_order._has_to_be_signed() and sale_order.state!='draft'</attribute>
+        </xpath>
+         <xpath expr="//div[@t-elif='sale_order._has_to_be_paid()']" position="attributes">
+            <attribute name="t-elif">sale_order.state!='draft'</attribute>
+        </xpath>
+        <xpath expr="//hr" position="attributes">
+            <attribute name="t-if">sale_order.state!='draft' and sale_order.state!='sent'</attribute>
+        </xpath>
+        <xpath expr="//div[@id='sale_order_communication']" position="attributes">
+            <attribute name="t-if">sale_order.state!='draft' and sale_order.state!='sent'</attribute>
+        </xpath>
+    </template>
+    <template id="md_remove_sale_tnc" inherit_id="sale.sale_order_portal_content" name="Sales Order Portal Content">
+        <xpath expr="//section[@t-if='not is_html_empty(sale_order.note)']" position="attributes">
+            <attribute name="t-if">not sale_order.is_quote</attribute>
+        </xpath>
+        <xpath expr="//section[@t-if='sale_order.payment_term_id']" position="attributes">
+            <attribute name="t-if">not sale_order.is_quote</attribute>
+        </xpath>
+    </template>
+    <template id="md_remove_portal_record_sidebar" inherit_id="portal.portal_record_sidebar" name="My Portal Record Sidebar">
+        <xpath expr="//div[contains(@t-attf-class,'#{classes}')]" position="attributes">
+            <attribute name="t-if">quote_state != 'draft'</attribute>
+        </xpath>
+    </template>
+    <template id="md_remove_portal_record_desc_sidebar" inherit_id="website_sale.sale_order_portal_content_inherit_website_sale" name="Orders Followup Products Links">
+        <xpath expr="//span[@t-field='line.name']" position="replace">
+            <span t-field="line.product_id.display_name" />
+        </xpath>
+    </template>
+    <template id="md_portal_quotations_changes" inherit_id="sale.portal_my_quotations" name="My Quotations">
+        <xpath expr="//thead" position="before">
+            <div class="alert alert-danger" role="alert">
+                Expired quotes will automatically be removed after 10 days
+            </div>
+        </xpath>
+    </template>
+    <template id="md_portal_remove_accnt_profile" inherit_id="portal.side_content">
+        <xpath expr="//img" position="replace">
+        </xpath>
+    </template>
+    <template id="md_remove_contact_us_button" inherit_id="website_sale.product" name="Remove Contact us button">
+        <xpath expr="//div[@id='contact_us_wrapper']" position="attributes">
+            <attribute name="t-if">combination_info['prevent_zero_price_sale'] and not request.website.website_request_quote</attribute>
+        </xpath>
+    </template>
+
+    <!-- Quote Wizard Checkout - step navigation matching Odoo style -->
+    <template id="quote_wizard_checkout" name="Quote Wizard Checkout">
+        <div class="o_wizard d-flex flex-wrap row-gap-2 my-3 small">
+            <!-- Step 1: Quotation -->
+            <t t-set="is_order_current" t-value="current_step == 'order'"/>
+            <t t-set="order_completed" t-value="current_step in ['address', 'application']"/>
+            <t t-if="order_completed">
+                <a class="d-flex no-decoration" href="/shop/quote/cart" title="Quotation">
+                    <div class="d-flex align-items-center">
+                        <p class="text-center mb-0">Quotation</p>
+                        <span class="fa fa-angle-right d-inline-block align-middle mx-3 text-muted fs-5"/>
+                    </div>
+                </a>
+            </t>
+            <t t-else="">
+                <span t-attf-class="#{not is_order_current and 'o_disabled'} d-flex no-decoration">
+                    <div name="step_name" t-attf-class="d-flex align-items-center {{'fw-bold' if is_order_current else 'text-muted'}}">
+                        <p class="text-center mb-0">Quotation</p>
+                        <span class="fa fa-angle-right d-inline-block align-middle mx-3 text-muted fs-5"/>
+                    </div>
+                </span>
+            </t>
+
+            <!-- Step 2: Address -->
+            <t t-set="is_address_current" t-value="current_step == 'address'"/>
+            <t t-set="address_completed" t-value="current_step == 'application'"/>
+            <t t-if="address_completed">
+                <a class="d-flex no-decoration" t-att-href="'/shop/quote/checkout' if request.env.user._is_public() else '/shop/quote/checkout'" title="Address">
+                    <div class="d-flex align-items-center">
+                        <p class="text-center mb-0">Address</p>
+                        <span class="fa fa-angle-right d-inline-block align-middle mx-3 text-muted fs-5"/>
+                    </div>
+                </a>
+            </t>
+            <t t-else="">
+                <span t-attf-class="#{not is_address_current and 'o_disabled'} d-flex no-decoration">
+                    <div name="step_name" t-attf-class="d-flex align-items-center {{'fw-bold' if is_address_current else 'text-muted'}}">
+                        <p class="text-center mb-0">Address</p>
+                        <span class="fa fa-angle-right d-inline-block align-middle mx-3 text-muted fs-5"/>
+                    </div>
+                </span>
+            </t>
+
+            <!-- Step 3: Application -->
+            <t t-set="is_application_current" t-value="current_step == 'application'"/>
+            <span t-attf-class="#{not is_application_current and 'o_disabled'} d-flex no-decoration">
+                <div name="step_name" t-attf-class="d-flex align-items-center {{'fw-bold' if is_application_current else 'text-muted'}}">
+                    <p class="text-center mb-0">Application</p>
+                </div>
+            </span>
+        </div>
+    </template>
+
+    <!-- Quote Cart Summary Content - shows items without prices -->
+    <template id="quote_cart_summary_content" name="Quote Cart Summary Content">
+        <div t-if="not website_sale_order or not website_sale_order.website_order_line" name="cart_summary_info" class="alert alert-info">
+            Your quote cart is empty!
+        </div>
+        <div>
+            <h6 class="mb-3">Quotation Items</h6>
+            <div t-att-class="len(website_sale_order.website_order_line) &gt; 3 and 'o_wsale_scrollable_table'">
+                <table t-if="website_sale_order and website_sale_order.website_order_line" class="o_cart_products_table table mb-0">
+                    <tbody>
+                        <tr t-foreach="website_sale_order.website_order_line" t-as="line" t-att-class="line_last and 'border-transparent'">
+                            <td class="td-img ps-0 pt-3">
+                                <div class="o_cart_product_image position-relative">
+                                    <span t-if="not line._is_sellable() and line.product_id.image_128">
+                                        <img t-att-src="image_data_uri(line.product_id.image_128)" class="img rounded" t-att-alt="line.name_short"/>
+                                    </span>
+                                    <span t-else="" t-field="line.product_id.image_128" t-options="{'widget': 'image', 'qweb_img_responsive': False, 'class': 'rounded'}"/>
+                                    <span class="o_cart_item_count badge bg-secondary position-absolute top-0 start-100 translate-middle">
+                                        <t t-out="int(line.product_uom_qty)"/>
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="td-product_name td-qty w-100 pt-3" name="website_sale_cart_summary_product_name">
+                                <span class="text-wrap" t-out="line._get_line_header()"/>
+                                <p class="text-muted small mb-0" t-out="line._get_combination_name()"/>
+                            </td>
+                            <!-- No price column for quote -->
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </template>
+
+    <!-- Quote Navigation Buttons - for checkout sidebar (matching website_sale.navigation_buttons style) -->
+    <template id="quote_navigation_buttons" name="Quote Navigation Buttons">
+        <div class="d-flex flex-column gap-2">
+            <a role="button" href="/shop/quote/extra_info" class="btn btn-primary w-100" name="website_sale_main_button">
+                <span>Continue</span>
+                <i class="fa fa-angle-right ms-2 fw-light"/>
+            </a>
+            <!-- Separator -->
+            <div class="position-relative d-none d-lg-flex w-100 justify-content-center align-items-center my-2 opacity-75">
+                <hr class="w-100 m-0"/>
+                <span class="px-3 bg-white small text-muted">or</span>
+                <hr class="w-100 m-0"/>
+            </div>
+            <a href="/shop/quote/cart" class="mt-2 mt-lg-0 text-center">
+                <i class="fa fa-angle-left me-2 fw-light"/>
+                <span>Back to Quote Cart</span>
+            </a>
+        </div>
+    </template>
+
+    <!-- Quote Extra Info Page - using same structure as website_sale.checkout_layout -->
+    <template id="quote_extra_info" name="Quote Extra Info">
+        <t t-call="website.layout">
+            <t t-set="additional_title">Application</t>
+            <t t-set="body_classname" t-value="'o_website_sale_checkout'"/>
+            <div id="wrap" class="d-flex flex-column flex-grow-1">
+                <div class="oe_website_sale o_website_sale_checkout_container container d-flex flex-column flex-grow-1 py-lg-2">
+                    
+                    <div class="row mb32">
+                        <!-- Wizard steps at top -->
+                        <div class="col-12">
+                            <t t-call="ip_website_quote_cart.quote_wizard_checkout">
+                                <t t-set="current_step" t-value="'application'"/>
+                            </t>
+                        </div>
+                        
+                        <!-- LEFT COLUMN: Form content (matching checkout_layout oe_cart structure) -->
+                        <div class="oe_cart col-12 col-lg-7">
+                            <!-- Drag-and-drop area for website editor -->
+                            <div class="oe_structure" id="oe_structure_quote_extra_info_1"/>
+
+                            <h4 class="mb-3">Application</h4>
+                            <section class="s_website_form" data-vcss="001" data-snippet="s_website_form">
+                                <form
+                                    id="quote_extra_form"
+                                    action="/website/form/"
+                                    method="post"
+                                    enctype="multipart/form-data"
+                                    class="o_mark_required s_website_form_no_recaptcha"
+                                    data-mark="*"
+                                    data-force_action="shop.quote.order"
+                                    data-model_name="sale.order"
+                                    data-success-mode="redirect"
+                                    data-success-page="/shop/quote/submit"
+                                    hide-change-model="true"
+                                >
+                                    <div class="s_website_form_rows s_col_no_bgcolor row">
+                                        <span id="s_website_form_result"/>
+                                        
+                                        <!-- Your Reference field -->
+                                        <div class="s_website_form_field col-12 pb-2 mb-0" data-type="char" data-name="Field">
+                                            <div class="s_col_no_resize s_col_no_bgcolor">
+                                                <label class="s_website_form_label col-form-label col-sm-auto" style="width: 200px" for="quote_ref">
+                                                    <span class="s_website_form_label_content">Your Reference</span>
+                                                </label>
+                                                <div class="col-sm">
+                                                    <input id="quote_ref" type="text" class="s_website_form_input form-control" name="client_order_ref" t-att-value="order.client_order_ref or ''"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Application Description field -->
+                                        <div class="s_website_form_field s_website_form_custom col-12 pb-2 mb-0" data-type="text" data-name="Field">
+                                            <div class="s_col_no_resize s_col_no_bgcolor">
+                                                <label class="s_website_form_label col-form-label col-sm-auto" style="width: 200px" for="quote_description">
+                                                    <span class="s_website_form_label_content">Tell us more about your application</span>
+                                                </label>
+                                                <div class="col-sm">
+                                                    <textarea id="quote_description" class="s_website_form_input form-control" rows="5" name="Application Description" placeholder="Please describe your application, intended use, or any special requirements..."/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Document Upload field -->
+                                        <div class="s_website_form_field s_website_form_custom col-12 pb-2 mb-0" data-type="binary" data-name="Field">
+                                            <div class="s_col_no_resize s_col_no_bgcolor">
+                                                <label class="s_website_form_label col-form-label col-sm-auto" style="width: 200px" for="quote_document">
+                                                    <span class="s_website_form_label_content">Upload a document</span>
+                                                </label>
+                                                <div class="col-sm">
+                                                    <input id="quote_document" type="file" class="s_website_form_input form-control" name="a_document"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </section>
+
+                            <!-- Drag-and-drop area at the end -->
+                            <div class="oe_structure" id="oe_structure_quote_extra_info_2"/>
+                        </div>
+                        
+                        <!-- RIGHT COLUMN: Sidebar with items summary and submit button (matching checkout_layout) -->
+                        <div class="d-none d-lg-block offset-xxl-1 col-lg-5 col-xxl-4">
+                            <div class="o_total_card card sticky-lg-top o_wsale_sticky_object mb-3 mb-lg-0">
+                                <div class="card-body p-lg-4 pt-lg-3">
+                                    <t t-call="ip_website_quote_cart.quote_cart_summary_content"/>
+                                    <div class="o_cta_navigation_container px-0 mt-3">
+                                        <div class="d-flex flex-column gap-2">
+                                            <button type="submit" form="quote_extra_form" class="btn btn-primary w-100 o_website_form_send" name="website_sale_main_button">
+                                                <span>Submit Quote Request</span>
+                                                <i class="fa fa-angle-right ms-2 fw-light"/>
+                                            </button>
+                                            <!-- Separator -->
+                                            <div class="position-relative d-flex w-100 justify-content-center align-items-center my-2 opacity-75">
+                                                <hr class="w-100 m-0"/>
+                                                <span class="px-3 bg-white small text-muted">or</span>
+                                                <hr class="w-100 m-0"/>
+                                            </div>
+                                            <a href="/shop/quote/checkout" class="text-center">
+                                                <i class="fa fa-angle-left me-2 fw-light"/>
+                                                <span>Back to Address</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Mobile sticky summary (matching website_sale checkout_layout) -->
+                    <div class="o_mobile_summary d-lg-none sticky-bottom mt-auto bg-body">
+                        <div class="d-flex justify-content-between align-items-center py-3">
+                            <a href="/shop/quote/checkout" class="btn btn-link">
+                                <i class="fa fa-angle-left me-1"/> Back
+                            </a>
+                            <button type="submit" form="quote_extra_form" class="btn btn-primary o_website_form_send">
+                                <span>Submit Quote</span>
+                                <i class="fa fa-angle-right ms-2"/>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

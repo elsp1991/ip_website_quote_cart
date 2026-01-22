@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+    <!-- Override the "Add to Cart" button for optional products in quote cart -->
+    <t t-inherit="sale.Product" t-inherit-mode="extension">
+        <!-- Add text-nowrap to button to prevent text wrapping -->
+        <button name="sale_product_configurator_add_button" position="attributes">
+            <attribute name="class" add="text-nowrap" separator=" "/>
+        </button>
+        <!-- Show the Add to Quote button even for products that can't be sold (zero price) when in quote cart -->
+        <button name="sale_product_configurator_add_button" position="attributes">
+            <attribute name="t-if">this.props.can_be_sold or env.isQuoteCart</attribute>
+        </button>
+        <!-- Change the shopping cart icon to file icon when in quote cart -->
+        <xpath
+            expr="//button[@name='sale_product_configurator_add_button']/*[hasclass('fa-shopping-cart')]"
+            position="replace"
+        >
+            <i t-if="env.isQuoteCart" class="fa fa-file-text" role="img"/>
+            <i t-else="" class="fa fa-shopping-cart" role="img"/>
+        </xpath>
+        <!-- Change the "Add to Cart" text to "Add to Quote" when in quote cart -->
+        <span name="add_button" position="replace">
+            <span name="add_button" class="ms-2 d-none d-md-inline text-nowrap">
+                <t t-if="env.isQuoteCart">Add to Quote</t>
+                <t t-else="">Add to Cart</t>
+            </span>
+        </span>
+        <!-- Show quantity buttons even for zero-price products when in quote cart -->
+        <QuantityButtons position="attributes">
+            <attribute name="t-if" add="or env.isQuoteCart" separator=" "/>
+        </QuantityButtons>
+    </t>
+
+    <!-- Override "Not available for sale" to show "Quote for price" when in quote cart -->
+    <t t-inherit="website_sale.not_for_sale" t-inherit-mode="extension">
+        <div position="replace">
+            <div
+                t-if="!this.props.can_be_sold and !env.isQuoteCart"
+                class="text-muted fst-italic"
+            >
+                <i class="fa fa-times me-1"/>
+                Not available for sale
+            </div>
+            <div
+                t-if="!this.props.can_be_sold and env.isQuoteCart"
+                class="text-muted fst-italic"
+            >
+                Quote for price
+            </div>
+        </div>
+    </t>
+
+    <!-- Hide price for zero-price products in quote cart configurator -->
+    <t t-inherit="sale.product_price" t-inherit-mode="extension">
+        <span name="sale_product_configurator_formatted_price" position="attributes">
+            <attribute name="t-if">this.props.can_be_sold or !env.isQuoteCart</attribute>
+        </span>
+    </t>
+</templates>

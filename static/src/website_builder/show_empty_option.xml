@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+<!-- Add Quote Cart option to the Header Show Empty section -->
+<t t-name="ip_website_quote_cart.ShowEmptyOption" t-inherit="website_sale.ShowEmptyOption" t-inherit-mode="extension">
+    <BuilderRow id="'show_empty_opt'" position="inside">
+        <BuilderButton title.translate="Quote Cart" icon="'fa-file-text'"
+            className="'flex-grow-1'"
+            actionParam="{views: ['!ip_website_quote_cart.header_hide_empty_quote_link']}"
+        />
+    </BuilderRow>
+</t>
+
+</templates>

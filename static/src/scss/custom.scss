@@ -1,0 +1,35 @@
+.myquotecart-popover{
+    max-width: 500px;
+    min-width: 250px;
+
+    .cart_line {
+        border-bottom: 1px #EEE solid;
+    }
+}
+
+/* Ensure quote cart icons inherit button text color */
+.btn .fa-file-text,
+.btn .fa-file-text-o {
+    color: inherit;
+}
+
+/* Prevent Add to Quote button from wrapping in configurator dialog */
+.o_sale_product_configurator_dialog button[name="sale_product_configurator_add_button"] {
+    white-space: nowrap;
+    width: auto !important;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* Quote button visibility on product tiles - controlled by website editor toggle */
+/* Hide quote buttons when the grid does NOT have the o_wsale_products_opt_has_quote class */
+#o_wsale_products_grid:not(.o_wsale_products_opt_has_quote) .o_add_quote,
+#o_wsale_products_grid:not(.o_wsale_products_opt_has_quote) .js_add_quote_grid {
+    display: none !important;
+}
+
+/* Show quote buttons when the grid HAS the o_wsale_products_opt_has_quote class */
+#o_wsale_products_grid.o_wsale_products_opt_has_quote .o_add_quote,
+#o_wsale_products_grid.o_wsale_products_opt_has_quote .js_add_quote_grid {
+    display: inline-flex;
+}

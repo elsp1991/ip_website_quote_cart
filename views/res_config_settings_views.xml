@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- Settings view removed - Quote cart visibility is now controlled via the website editor -->
+    <!-- The quote icon in header and quote button on products can be toggled in: -->
+    <!-- - Header: Edit website > Select header > Show Empty section > Quote Cart toggle -->
+    <!-- - Products: Edit website > Shop page > Select product grid > Products Design > Actions > Quote toggle -->
+</odoo>

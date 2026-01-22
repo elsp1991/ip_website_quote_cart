@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<templates xml:space="preserve">
+    <t t-inherit="website_sale.cartNotification" t-inherit-mode="extension">
+        <xpath expr="//AddToCartNotification" position="attributes">
+            <attribute name="is_quote">this.props.is_quote</attribute>
+        </xpath>
+    </t>
+</templates>

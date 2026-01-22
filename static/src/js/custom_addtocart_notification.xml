@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <!-- Override the button to show "View Quote" for quote cart -->
+    <t t-inherit="website_sale.addToCartNotification" t-inherit-mode="extension">
+        <xpath expr="//a" position="replace">
+            <a t-if="!props.is_quote" role="button" class="w-100 btn btn-primary" href="/shop/cart">
+                View cart
+            </a>
+            <a t-if="props.is_quote" role="button" class="w-100 btn btn-primary" href="/shop/quote/cart">
+                View Quote
+            </a>
+        </xpath>
+    </t>
+    
+    <!-- Hide price in cart line for quote notifications (using hide_price flag on line) -->
+    <t t-inherit="website_sale.cartLine" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('col-3')]" position="attributes">
+            <attribute name="t-if">!line.linked_line_id and !line.hide_price</attribute>
+        </xpath>
+    </t>
+</templates>
