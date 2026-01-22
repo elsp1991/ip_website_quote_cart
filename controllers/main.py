@@ -655,6 +655,7 @@ class CustomerPortalSale(CustomerPortalSale):
             ('validity_date','>=',fields.Date.today() - timedelta(days=10))
         ]
 
+    @http.route(['/my/quotes/<int:order_id>/decline'], type='http', auth="public", methods=['POST'], website=True)
     def portal_quote_decline(self, order_id, access_token=None, decline_message=None, **kwargs):
         try:
             order_sudo = self._document_check_access('sale.order', order_id, access_token=access_token)
