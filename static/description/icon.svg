@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <!-- Main document gradient - Odoo teal green -->
+    <linearGradient id="docGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1DE9B6"/>
+      <stop offset="100%" style="stop-color:#00BFA5"/>
+    </linearGradient>
+    <!-- Folded corner gradient (darker teal) -->
+    <linearGradient id="foldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00897B"/>
+      <stop offset="100%" style="stop-color:#00695C"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Main document body with sharp fold -->
+  <path d="M20 8 L88 8 L108 28 L108 120 L20 120 Z" fill="url(#docGradient)"/>
+  
+  <!-- Sharp folded corner -->
+  <path d="M88 8 L88 28 L108 28 Z" fill="url(#foldGradient)"/>
+  
+  <!-- Top line -->
+  <rect x="32" y="38" width="40" height="4" rx="2" fill="#004D40" opacity="0.4"/>
+  
+  <!-- Dollar sign centered -->
+  <text x="64" y="82" font-family="Arial, sans-serif" font-size="42" font-weight="bold" fill="#004D40" text-anchor="middle" opacity="0.6">$</text>
+  
+  <!-- Bottom lines -->
+  <rect x="32" y="98" width="55" height="4" rx="2" fill="#004D40" opacity="0.4"/>
+  <rect x="32" y="108" width="35" height="4" rx="2" fill="#004D40" opacity="0.3"/>
+</svg>
