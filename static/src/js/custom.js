@@ -192,6 +192,10 @@ const { DateTime } = luxon;
 	                    is_quote_cart: true,
 	                },
 	                save: async (mainProduct, optionalProducts, options) => {
+	                    // Collect all notification lines
+	                    let allNotificationLines = [];
+	                    let currencyId = 0;
+	                    
 	                    // Add main product
 	                    const params = {
 	                        product_id: mainProduct.id,
@@ -203,6 +207,12 @@ const { DateTime } = luxon;
 	                        display: false,
 	                        force_create: true,
 	                    });
+	                    
+	                    // Collect main product notification info
+	                    if (data.notification_info && data.notification_info.lines) {
+	                        allNotificationLines = allNotificationLines.concat(data.notification_info.lines);
+	                        currencyId = data.notification_info.currency_id || currencyId;
+	                    }
 
 	                    // Add optional products
 	                    for (const optionalProduct of optionalProducts) {
@@ -211,8 +221,19 @@ const { DateTime } = luxon;
 	                            add_qty: optionalProduct.quantity,
 	                            display: false,
 	                        });
+	                        
+	                        // Collect optional product notification info
+	                        if (data.notification_info && data.notification_info.lines) {
+	                            allNotificationLines = allNotificationLines.concat(data.notification_info.lines);
+	                            currencyId = data.notification_info.currency_id || currencyId;
+	                        }
 	                    }
 
+	                    // Update UI with combined notification info
+	                    data.notification_info = {
+	                        lines: allNotificationLines,
+	                        currency_id: currencyId,
+	                    };
 	                    this._updateQuoteCartUI(data);
 	                    
 	                    // Navigate to quote cart if "Go to Quote" was clicked
