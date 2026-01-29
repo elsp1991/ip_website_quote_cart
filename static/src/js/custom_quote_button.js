@@ -98,17 +98,20 @@ publicWidget.registry.mdProductShopPage = publicWidget.Widget.extend({
      * @param {MouseEvent} ev
      */
     _onClickAddToQuoteFromProductsPage: async function (ev) {
+        // Get product template ID from the button's data attribute (product tiles)
+        const productTemplateId = parseInt(ev.currentTarget.dataset.productTemplateId);
+        
         const shouldShowProductConfiguratorQuote = await rpc(
             '/website_sale/should_show_product_configurator',
             {
-                product_template_id: parseInt($($(ev.currentTarget).closest('div')).find("input[name=product_template_id]")[0].value),
+                product_template_id: productTemplateId,
                 ptav_ids: [],
                 is_product_configured: false,
             }
         )
         if (shouldShowProductConfiguratorQuote) {
             this.call('dialog', 'add', ProductConfiguratorDialog, {
-                productTemplateId: parseInt($($(ev.currentTarget).closest('div')).find("input[name=product_template_id]")[0].value),
+                productTemplateId: productTemplateId,
                 ptavIds: [],
                 customPtavs: [].map(
                     customPtav => ({
