@@ -536,12 +536,16 @@ class CustomerPortal(CustomerPortal):
 
         SaleOrder = request.env['sale.order'].sudo()
         if 'requested_quotation_count' in counters:
-            values['requested_quotation_count'] = SaleOrder.search_count([
-                # ('message_partner_ids', 'child_of', [partner.commercial_partner_id.id]),
-                ('partner_id', '=', partner.id),
-                ('state', 'in', ['draft', 'sent', 'cancel']),
-                ('is_quote_req_submit', '=', True)
-            ]) if SaleOrder.check_access_rights('read', raise_exception=False) else 0
+            try:
+                SaleOrder.check_access('read')
+                values['requested_quotation_count'] = SaleOrder.search_count([
+                    # ('message_partner_ids', 'child_of', [partner.commercial_partner_id.id]),
+                    ('partner_id', '=', partner.id),
+                    ('state', 'in', ['draft', 'sent', 'cancel']),
+                    ('is_quote_req_submit', '=', True)
+                ])
+            except AccessError:
+                values['requested_quotation_count'] = 0
 
         return values
 
