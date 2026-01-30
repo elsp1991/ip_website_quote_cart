@@ -3,7 +3,7 @@
 {
     'name': 'Website Quote Cart',
     'version': '19.0.0.0',
-    'summary': 'An additional cart to request quotations directly from the eShop',
+    'summary': 'Quote your products online.',
     'description': "",
     'category': 'Website/Website',
     'license': 'OPL-1',
