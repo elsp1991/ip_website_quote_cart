@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Quote Cart</title>
+    <style>
+        :root {
+            --primary: #00BFA5;
+            --primary-dark: #00897B;
+            --text: #333;
+            --text-muted: #666;
+            --bg-light: #f8f9fa;
+            --border: #dee2e6;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+        }
+        
+        .header .tagline {
+            font-size: 1.3em;
+            color: var(--text-muted);
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section h2 {
+            color: var(--primary-dark);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .feature {
+            background: var(--bg-light);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .feature h3 {
+            margin-top: 0;
+            color: var(--primary-dark);
+        }
+        
+        .screenshot {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .highlight {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin: 30px 0;
+        }
+        
+        .highlight h3 {
+            margin-top: 0;
+        }
+        
+        ul {
+            padding-left: 20px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        .requirements {
+            background: var(--bg-light);
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .requirements h3 {
+            margin-top: 0;
+        }
+        
+        code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        
+        .support {
+            background: var(--bg-light);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .support a {
+            color: var(--primary-dark);
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>🛒 Website Quote Cart</h1>
+    <p class="tagline">Quote your products online</p>
+</div>
+
+<div class="section">
+    <h2>Overview</h2>
+    <p>
+        <strong>Website Quote Cart</strong> adds a separate quotation cart to your Odoo eCommerce store, 
+        allowing customers to request quotes for products instead of purchasing directly. 
+        Perfect for B2B businesses, custom pricing scenarios, or products that require negotiation.
+    </p>
+</div>
+
+<div class="highlight">
+    <h3>✨ Why Website Quote Cart?</h3>
+    <p>
+        Give your customers the flexibility to request quotations directly from your online shop. 
+        Works alongside the regular shopping cart - customers can choose to buy immediately or request a quote.
+    </p>
+</div>
+
+<div class="section">
+    <h2>Key Features</h2>
+    <div class="features">
+        <div class="feature">
+            <h3>📋 Dedicated Quote Cart</h3>
+            <p>Separate cart for quotation requests, independent of the regular shopping cart.</p>
+        </div>
+        <div class="feature">
+            <h3>🔧 Product Configurator</h3>
+            <p>Full support for product variants and optional products in quote requests.</p>
+        </div>
+        <div class="feature">
+            <h3>💰 Zero-Price Products</h3>
+            <p>Perfect for "Contact for Price" products - customers can request quotes even when prices aren't displayed.</p>
+        </div>
+        <div class="feature">
+            <h3>📧 Email Notifications</h3>
+            <p>Automatic email notifications when customers submit quote requests.</p>
+        </div>
+        <div class="feature">
+            <h3>❤️ Wishlist Integration</h3>
+            <p>Add products to quote cart directly from wishlist.</p>
+        </div>
+        <div class="feature">
+            <h3>⚖️ Comparison Integration</h3>
+            <p>Add products to quote cart from the product comparison page.</p>
+        </div>
+    </div>
+</div>
+
+<div class="section">
+    <h2>How It Works</h2>
+    <ol>
+        <li><strong>Add to Quote</strong> - Customers click the "Add to Quote" button on products</li>
+        <li><strong>Configure Options</strong> - Select variants and optional products if available</li>
+        <li><strong>Review Quote Cart</strong> - View and modify items in the dedicated quote cart</li>
+        <li><strong>Submit Request</strong> - Customer submits the quote request with their details</li>
+        <li><strong>Receive Quote</strong> - Sales team receives the request and sends a formal quotation</li>
+    </ol>
+</div>
+
+<!-- Add your screenshots here -->
+<!--
+<div class="section">
+    <h2>Screenshots</h2>
+    <img src="screenshot_1.png" alt="Quote button on product page" class="screenshot">
+    <img src="screenshot_2.png" alt="Quote cart page" class="screenshot">
+    <img src="screenshot_3.png" alt="Quote submission" class="screenshot">
+</div>
+-->
+
+<div class="section">
+    <h2>Configuration</h2>
+    <p>After installation, configure the module in <strong>Website → Configuration → Settings</strong>:</p>
+    <ul>
+        <li>Enable/disable the quote cart feature per website</li>
+        <li>Customize email templates for quote notifications</li>
+        <li>Configure quote cart visibility options</li>
+    </ul>
+</div>
+
+<div class="section">
+    <div class="requirements">
+        <h3>Requirements</h3>
+        <ul>
+            <li>Odoo 19.0</li>
+            <li>Website Sale module</li>
+            <li>Sale Management module</li>
+            <li>Website Sale Wishlist (optional, for wishlist integration)</li>
+            <li>Website Sale Comparison (optional, for comparison integration)</li>
+        </ul>
+    </div>
+</div>
+
+<div class="section">
+    <div class="support">
+        <h3>Support</h3>
+        <p>Need help? Contact us at <a href="mailto:ilias.patsiaouras@gmail.com">ilias.patsiaouras@gmail.com</a></p>
+    </div>
+</div>
+
+</body>
+</html>
