@@ -40,5 +40,4 @@
     'auto_install': False,
     'price': 40,
     'currency': 'USD',
-    'icon': 'static/description/icon.svg',
 }
