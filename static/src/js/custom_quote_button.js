@@ -129,46 +129,62 @@ publicWidget.registry.mdProductShopPage = publicWidget.Widget.extend({
                     is_quote_cart: true,
                 },
                 save: async (mainProduct, optionalProducts, options) => {
+                    // Collect all notification lines
+                    let allNotificationLines = [];
+                    let currencyId = 0;
+                    
                     // Add main product
-		        var product_id = mainProduct.id
-		        var qty = mainProduct.quantity
-		        const params = {
-	            product_id: parseInt(product_id),
-	            add_qty: parseFloat(qty),
-	        	};
+                    var product_id = mainProduct.id
+                    var qty = mainProduct.quantity
+                    const params = {
+                        product_id: parseInt(product_id),
+                        add_qty: parseFloat(qty),
+                    };
 
-                let data = await rpc("/shop/quote/cart/update_json", {
-                    ...params,
-                    display: false,
-                    force_create: true,
-                });
-
-                // Add optional products
-                for (const optionalProduct of optionalProducts) {
-                    data = await rpc("/shop/quote/cart/update_json", {
-                        product_id: optionalProduct.id,
-                        add_qty: optionalProduct.quantity,
+                    let data = await rpc("/shop/quote/cart/update_json", {
+                        ...params,
                         display: false,
+                        force_create: true,
                     });
-                }
+                    
+                    // Collect main product notification info
+                    if (data.notification_info && data.notification_info.lines) {
+                        allNotificationLines = allNotificationLines.concat(data.notification_info.lines);
+                        currencyId = data.notification_info.currency_id || currencyId;
+                    }
+
+                    // Add optional products
+                    for (const optionalProduct of optionalProducts) {
+                        data = await rpc("/shop/quote/cart/update_json", {
+                            product_id: optionalProduct.id,
+                            add_qty: optionalProduct.quantity,
+                            display: false,
+                        });
+                        
+                        // Collect optional product notification info
+                        if (data.notification_info && data.notification_info.lines) {
+                            allNotificationLines = allNotificationLines.concat(data.notification_info.lines);
+                            currencyId = data.notification_info.currency_id || currencyId;
+                        }
+                    }
                 
-                // Mark data as quote cart and update UI
-                data.is_quote_cart = 'is_quote_cart';
-                wSaleUtils.updateCartNavBar(data);
+                    // Mark data as quote cart and update UI
+                    data.is_quote_cart = 'is_quote_cart';
+                    wSaleUtils.updateCartNavBar(data);
                 
-                // Show notification
-                if (data.notification_info && data.notification_info.lines) {
-                    this.showQuoteCartNotification(this.call.bind(this), {
-                        lines: data.notification_info.lines,
-                        currency_id: data.notification_info.currency_id || 0,
-                        is_quote: true,
-                    });
-                }
+                    // Show notification with ALL products
+                    if (allNotificationLines.length > 0) {
+                        this.showQuoteCartNotification(this.call.bind(this), {
+                            lines: allNotificationLines,
+                            currency_id: currencyId,
+                            is_quote: true,
+                        });
+                    }
                 
-                // Navigate to quote cart if "Go to Quote" was clicked
-                if (options && options.goToCart) {
-                    window.location.href = '/shop/quote/cart';
-                }
+                    // Navigate to quote cart if "Go to Quote" was clicked
+                    if (options && options.goToCart) {
+                        window.location.href = '/shop/quote/cart';
+                    }
                 },
                 discard: () => {},
                 ...this._getAdditionalDialogProps(),
