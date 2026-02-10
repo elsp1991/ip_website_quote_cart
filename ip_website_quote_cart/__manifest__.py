@@ -1,10 +1,26 @@
 # -*- coding: utf-8 -*-
 
 {
-    'name': 'Website Quote Cart',
-    'version': '19.0.0.0',
-    'summary': 'Quote your products online.',
-    'description': "",
+    'name': 'Website Online Quotation System',
+    'version': '19.0.0.3',
+    'summary': 'Add a dedicated quotation cart to your website for B2B quote requests.',
+    'description': """
+Website Online Quotation System (Quote Cart)
+=============================================
+
+Add a dedicated quotation cart to your Odoo eCommerce store, allowing customers 
+to request quotes for products instead of purchasing directly. Ideal for B2B 
+businesses that don't want to share their prices publicly.
+
+Key Features:
+- Dedicated Quotation Cart separate from shopping cart
+- Works with product variants and optional products
+- Hide prices with prevent_zero_price_sale integration
+- Integration with Sales module
+- Similar look and feel to the normal cart
+- Application description step in quotation process
+- Wishlist and Comparison page integration
+""",
     'category': 'Website/Website',
     'license': 'OPL-1',
     'support': 'ilias.patsiaouras@gmail.com',
@@ -38,6 +54,6 @@
     'installable': True,
     'application': True,
     'auto_install': False,
-    'price': 40,
-    'currency': 'USD',
+    'price': 135,
+    'currency': 'EUR',
 }

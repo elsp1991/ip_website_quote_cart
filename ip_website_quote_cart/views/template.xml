@@ -44,12 +44,6 @@
         </svg>
     </template>
 
-    <template id="hide_price_with_zero_product_price" inherit_id="website_sale.product_price">
-        <xpath expr="//div[@name='product_price']" position="attributes">
-            <attribute name="t-if">combination_info.get('price', 0) != 0</attribute>
-        </xpath>
-    </template>
-    
     <!-- Header Quote Cart Link Template (reusable like wishlist) -->
     <template id="header_quote_cart_link" name="Header Quote Cart Link">
         <t t-set="quote_cart_quantity" t-value="request.session.get('quote_cart_quantity', 0)" />
@@ -213,12 +207,7 @@
                 <i class="fa fa-file-text me-2" /> Add to quote
             </a>
         </xpath>
-        <xpath expr="//a[@t-attf-class='btn btn-primary js_check_product a-submit flex-grow-1']" position="replace">
-            <a t-if="combination_info.get('price', 0) != 0" data-animation-selector=".o_wsale_product_images" role="button" id="add_to_cart" t-attf-class="btn btn-primary js_check_product a-submit flex-grow-1" href="#">
-                <i class="fa fa-shopping-cart me-2" />
-                Add to cart
-            </a>
-        </xpath>
+
     </template>
     <template id="cart_lines" name="Shopping Quote Cart Lines">
         <div
